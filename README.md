@@ -1,158 +1,167 @@
-# Generative AI, Expertise, and Effective Labor Supply  
+**Generative AI, Expertise, and Effective Labor Supply**
 **Public Data Release**
 
-This repository contains the **task-level** and **occupation-level** datasets underlying the paper:
+This repository contains the task-level and occupation-level datasets underlying the paper:
 
-> **Generative AI, Expertise, and Effective Labor Supply**  
-> Seyed M. Hosseini and Guy Lichtinger (2026)
+Generative AI, Expertise, and Effective Labor Supply Seyed M. Hosseini and Guy Lichtinger (2026)
 
-The data are constructed from O*NET task descriptions combined with large language model (LLM) evaluations of automation exposure, task expertise, and GenAI-induced task transformation. The datasets are designed to support research on how generative AI reshapes occupational expertise, effective labor supply, and inequality.
+The data are constructed from O*NET task descriptions combined with large language model (LLM) evaluations. We distinguish between the extensive margin of automation (task removal) and the intensive margin (task simplification/augmentation). The data allow researchers to construct the Potential Supply Shift (PSS) index, which measures how GenAI alters the share of the workforce qualified to perform specific occupations.
 
----
+**1. Task-Level Dataset**
 
-## Overview of Datasets
+File: Final_Task_Dataset.xlsx Unit of Observation: Unique O*NET Task (N=19,265)
 
-We release **two complementary datasets**:
-
-1. **Task-Level Dataset**  
-2. **Occupation-Level Dataset**
-
-Together, they allow researchers to move beyond standard “exposure” measures and study how GenAI affects:
-- task expertise,
-- occupational entry barriers,
-- effective labor supply (Potential Supply Shift, PSS),
-- and productivity-relevant task content.
-
----
-
-## 1. Task-Level Dataset
-
-**File:**  
-
-Final_Task_Dataset.xlsx
+This dataset contains the primitive LLM evaluations for every task in the O*NET database.
 
 
-**Unit of observation:** O*NET task  
-**Coverage:** 19,265 tasks across 923 U.S. occupations
+**Identification & Weights**
 
-### Key Variables
+OccupationTitle: O*NET occupation title.
 
-#### Identifiers
-- `onet_soc_code`: O*NET-SOC occupation code  
-- `task_id`: O*NET task identifier  
-- `task_description`: Text description of the task  
-- `task_type`: Core vs. supplemental task
+ONETSOCCode: 8-digit O*NET-SOC code.
 
-#### GenAI Automation Exposure
-- `ai_exposed`: Binary indicator equal to 1 if the task is classified as automatable by GenAI  
-- `automation_score`: Discrete automation category (based on updated Eloundou et al. (2024) rubric)
+TaskID: Unique O*NET task identifier.
 
-#### Task Expertise (Without GenAI)
-- `expertise_score_noAI`: Ordinal expertise score (1–5)  
-- `expertise_label_noAI`: Categorical label (no/minimal → very high)  
-- `training_months_noAI`: Estimated months of task-specific training required
+Task: Full text description of the task.
 
-#### Task Expertise (With GenAI Assistance)
-- `expertise_score_withAI`: Expertise score assuming access to a capable GenAI assistant  
-- `training_months_withAI`: Training months required with GenAI assistance
+TaskType: Classification as "Core" or "Supplemental".
 
-#### Weights
-- `task_weight`: Task weight used in aggregation (1 for core tasks, 0.5 for supplemental tasks)
+task_weight: Weight used for aggregation (1.0 for Core tasks, 0.5 for Supplemental).
 
-### Construction Notes
-- Automation exposure and expertise ratings are generated using frontier LLMs under clearly defined prompts (see paper Appendix).
-- Expertise is defined as a **barrier to entry**, not task difficulty per se.
-- Training-time estimates map ordinal expertise scores into a continuous scale (months).
+task_importance_score: O*NET Importance rating (1–5 scale).
 
----
+task_frequency_annual: Estimated annual frequency of the task. Derived from O*NET categorical frequency ratings (1–7) converted into annual counts (e.g., "Hourly" ≈ 2080).
 
-## 2. Occupation-Level Dataset
+**Automation & Exposure Measures**
 
-**File:**  
-Final_Occupation_Dataset.xlsx
+automation_eloun: Original GPT-4 rating from Eloundou et al. (2024).
+
+automation_hl: Updated automation rating (T0–T4) using the authors' rubric and ChatGPT-5.2 (current Dec 2025 capabilities).
+
+beta: Exposure intensity used for productivity calculations (1 if exposed to LLM, 0.5 if exposed to LLM+Software, 0 otherwise).
+
+auto_hl_bi: Binary indicator (1 if task is T3 or T4, >80% automatable) based on the authors' updated measure.
+
+**Expertise Measures (Task Complexity)**
+
+expertise_without: Baseline expertise score (1–5) required to perform the task without AI. (Model: ChatGPT-5.2).
+
+expertise_with: Counterfactual expertise score (1–5) required to perform the task with a GenAI assistant.
+
+mmwo_without: Baseline training time in months (median mapping of expertise_without score).
+
+mmwo_with: Counterfactual training time in months (median mapping of expertise_with score).
+
+**Validation Variables**
+
+expertise_without_claude: Baseline expertise score generated by Claude Haiku 4.5.
+
+expertise_without_llama: Baseline expertise score generated by Llama 3.3 70B.
+
+mmwo_without_claude: Training months implied by Claude ratings.
+
+mmwo_without_llama: Training months implied by Llama ratings.
 
 
-**Unit of observation:** O*NET occupation  
-**Coverage:** 923 occupations
+=====================================================================================
 
-### Key Variables
+**2. Occupation-Level Dataset**
 
-#### Baseline Characteristics
-- `onet_soc_code`: O*NET-SOC occupation code  
-- `occupation_title`: Occupation name  
-- `mean_annual_wage_2024`: Mean annual wage (OEWS, 2024)  
-- `total_employment_2024`: Employment level (OEWS, 2024)
+File: Final_Occupation_Dataset.xlsx Unit of Observation: O*NET Occupation (N=923)
 
-#### Exposure Measures
-- `share_tasks_exposed`: Share of tasks classified as automatable (standard exposure measure)
+This dataset aggregates task-level data to the occupation level to provide indices on exposure, expertise shifts, and potential supply shifts.
 
-#### Expertise Measures
-- `expertise_noAI`: Average expertise requirement (training months) without GenAI  
-- `expertise_extensive`: Expertise after removing automated tasks (extensive margin)  
-- `expertise_intensive`: Expertise with GenAI assistance (intensive margin)  
-- `expertise_combined`: Combined post-GenAI expertise requirement
+**Identification & Labor Market Controls**
 
-#### Potential Expertise Shift (PES)
-- `PES_extensive`: Change in expertise from task removal  
-- `PES_intensive`: Change in expertise from task simplification  
-- `PES_combined`: Total expertise shift
+occupation_title: Occupation name.
 
-#### Potential Supply Shift (PSS)
-- `PSS`: Change in the share of the workforce qualified to perform the occupation  
-- `ps_base`: Baseline potential supply  
-- `ps_withAI`: Post-GenAI potential supply  
+onetsoccode: O*NET-SOC code.
 
-PSS is defined as:
-\[
-\text{PSS}_o = F(X_o^{\text{noAI}}) - F(X_o^{\text{combined}})
-\]
-where \( F(\cdot) \) is the employment-weighted distribution of baseline expertise.
+total_employment_2024: Total employment (BLS OEWS May 2024).
 
-#### Productivity
-- `prod_gain`: Predicted occupation-level productivity gain from GenAI (log points)
+employment_share_2024: Share of total US employment.
 
----
+mean_annual_wage_2024: Mean annual wage (BLS OEWS May 2024).
 
-## Relationship Between the Two Datasets
+median_annual_wage_2024: Median annual wage (BLS OEWS May 2024).
 
-- The **task-level dataset** is the primitive input: it contains all LLM evaluations.
-- The **occupation-level dataset** aggregates task-level information using O*NET task weights.
-- All occupation-level measures (exposure, PES, PSS, productivity) are fully reproducible from the task-level data.
+avg_years_schooling: Weighted average years of schooling required (derived from O*NET).
 
----
+avg_experience_years: Weighted average years of related work experience required (derived from O*NET).
 
-## Intended Use
+**Automation Exposure**
 
-These data are intended for:
-- Research on AI, labor markets, and inequality
-- Studying entry barriers and effective labor supply
-- General equilibrium modeling of technological change
-- Policy analysis beyond standard automation exposure metrics
+avg_auto_hl_bi: Headline Exposure Measure. Share of tasks within the occupation classified as automatable (T3/T4) by the authors' updated rubric.
 
----
+auto_hl_bi: Binary indicator or raw aggregation of the HL automation measure.
 
-## Important Caveats
+**Occupational Expertise (Training Months)**
 
-- The data measure **potential** effects of GenAI, not realized outcomes.
-- LLM-based assessments involve judgment and should be interpreted with caution.
-- The analysis abstracts from endogenous retraining, new task creation, and new occupations.
-- PSS depends on the assumed baseline distribution of expertise, constructed from observed occupational sorting.
+avg_mmwo_without: Baseline Occupational Expertise based on the mmwo_without variable from the task dataset.
 
----
+avg_mmwo_extensive: Average expertise of the remaining tasks after automating/removing exposed tasks.
 
-## Citation
+avg_mmwo_intensive: Average expertise of tasks assuming workers have access to GenAI assitance (task simplification).
+
+avg_mmwo_combined: Post-AI Expertise. Final average expertise requirement accounting for both task removal (extensive) and simplification (intensive).
+
+expertise_percentile: The occupation's percentile rank in the baseline expertise distribution (1−ps_without).
+
+**Potential Expertise Shift (PES)**
+
+pes_extensive_mmwo: Change in average training months due to task automation/removal.
+
+pes_intensive_mmwo: Change in average training months due to task augmentation/simplification.
+
+pes_combined_mmwo: Total PES. The net change in required training months (mapped).
+
+**Potential Supply Shift (PSS)**
+
+ps_without: Share of the workforce qualified to perform the job at baseline.
+
+ps_with: Share of the workforce qualified to perform the job post-AI.
+
+pss: Potential Supply Shift. The increase in the share of the workforce qualified to perform the occupation.
+
+
+**Productivity Measures**
+
+ai_exposure_share: Share of the occupation's total "Work Volume" exposed to GenAI. Work volume is calculated as ∑(Frequency×Importance).
+
+pred_productivity_effect: Predicted Productivity Gain. Calculated as ai_exposure_share × 0.5. Represents the aggregate labor time savings assuming GenAI reduces time on exposed tasks by 50%.
+
+**Validation**
+
+avg_mmwo_without_claude: Baseline expertise (months) using Claude ratings.
+
+avg_mmwo_without_llama: Baseline expertise (months) using Llama ratings.
+
+=====================================================================================
+
+
+**Methodology Summary**
+
+Task Scoring: We used ChatGPT-5.2 to score all O*NET tasks on (a) Automation feasibility and (b) Expertise requirements (1-5 scale) with and without AI assistance.
+
+Mapping to Months: Ordinal expertise scores were mapped to continuous "months of training" using a separate LLM prompt and median aggregation.
+
+Aggregation: Task-level data were aggregated to occupations using O*NET task weights (Core=1, Supplemental=0.5).
+
+Productivity: Unlike standard exposure measures, the productivity variable weighs tasks by their frequency and importance to capture the volume of work affected, not just the count of tasks.
+
+PSS Calculation: We estimate the distribution of workforce expertise F(e) using the employment-weighted distribution of occupational requirements. PSS represents the mass of workers between the old expertise threshold and the new (lower) post-AI threshold.
+
+=====================================================================================
+
+**Citation**
 
 If you use these data, please cite:
 
-> Hosseini, S. M., & Lichtinger, G. (2026).  
-> *Generative AI, Expertise, and Effective Labor Supply.*
+Hosseini, S. M., & Lichtinger, G. (2026). Generative AI, Expertise, and Effective Labor Supply. Working Paper.
 
----
 
-## Contact
+**Contact**
 
-- **Seyed M. Hosseini** — Harvard University  
-  shosseinimaasoum@fas.harvard.edu  
+Seyed M. Hosseini – Harvard University (shosseinimaasoum@fas.harvard.edu)
 
-- **Guy Lichtinger** — Harvard University  
-  guylichtinger@g.harvard.edu  
+Guy Lichtinger – Harvard University (guylichtinger@g.harvard.edu)
